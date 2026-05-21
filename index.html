@@ -200,7 +200,7 @@
   </div>
 
   <div class="top-bar">
-    <div class="line-info">💡 支援換行輸入，系統會自動轉換為遊戲內換行格式</div>
+    <div class="line-info">💡 支援換行輸入，系統會自動填滿空白至遊戲內換行長度 (15字)</div>
     <div id="charCounter" class="counter">已使用：0 / 232</div>
   </div>
 
@@ -255,7 +255,7 @@
 <script>
 const SAFE_LIMIT = 232;
 const MAX_CUSTOM_COLORS = 8;
-const GAME_LINE_LENGTH = 32;
+const GAME_LINE_LENGTH = 15; // 更改為15個中文字元換行
 
 const inputText = document.getElementById("inputText");
 const output = document.getElementById("output");
@@ -329,7 +329,7 @@ function buildGradientData(chars, groupSize) {
     const color = getThemeColor(ratio);
     const hex = rgbToHex(color.r, color.g, color.b);
 
-    // 優化：若全為填補空白，省下色碼標籤長度
+    // 優化：若全為填補空白，省下色碼標籤長度，直接填入空白字元
     if (/^[\s　]+$/.test(chunk)) {
       result += chunk;
       previewHtml += chunk;
