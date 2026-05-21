@@ -170,7 +170,12 @@
 <script>
 const SAFE_LIMIT = 232;
 const MAX_CUSTOM_COLORS = 8;
-const GAME_MAX_WIDTH = 30; // 遊戲內最大行寬（半形算1，全形/中文算2，30即為15個中文字）
+
+// 全新精確比例演算法 (16中文字 = 29英文字)
+// 設定每一行的總寬度為 16 與 29 的最小公倍數 (16 * 29 = 464)
+const GAME_MAX_WIDTH = 464; 
+const WIDTH_HALF = 16;      // 半形字元(英文/數字/半形空白) 佔用寬度 16
+const WIDTH_FULL = 29;      // 全形字元(中文/全形空白) 佔用寬度 29
 
 const inputText = document.getElementById("inputText");
 const output = document.getElementById("output");
@@ -214,12 +219,12 @@ function getThemeColor(t) {
 
 function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
-// 判斷字元寬度：非 ASCII 字元(中文、全形等) 寬度為 2，其餘為 1
+// 判斷字元寬度
 function getCharWidth(char) {
-  return char.match(/[^\x00-\xff]/) ? 2 : 1;
+  return char.match(/[^\x00-\xff]/) ? WIDTH_FULL : WIDTH_HALF;
 }
 
-// 將文字依照遊戲的視覺寬度邏輯填滿換行空格
+// 依照全新比例填滿換行空格
 function getPaddedText(text) {
   const lines = text.split('\n');
   let finalChars = [];
@@ -231,29 +236,38 @@ function getPaddedText(text) {
     for (let char of chars) {
       let cw = getCharWidth(char);
       
-      // 如果當前這行加起來會超過30寬度，強制用半形空白補滿！
+      // 如果加起來會超過單行上限(464)，強制填補剩餘空間
       if (current_w + cw > GAME_MAX_WIDTH) {
         let padUnits = GAME_MAX_WIDTH - current_w;
-        for (let s = 0; s < padUnits; s++) finalChars.push(" ");
-        current_w = 0; // 重置行寬計算
+        
+        let fullSpaces = Math.floor(padUnits / WIDTH_FULL);
+        let remainingAfterFull = padUnits - (fullSpaces * WIDTH_FULL);
+        // 使用無條件進位，確保塞入的空白能確切擠到下一行
+        let halfSpaces = Math.ceil(remainingAfterFull / WIDTH_HALF); 
+
+        for(let s=0; s<fullSpaces; s++) finalChars.push("　");
+        for(let s=0; s<halfSpaces; s++) finalChars.push(" ");
+        
+        current_w = 0; 
       }
 
       finalChars.push(char);
       current_w += cw;
 
       if (current_w === GAME_MAX_WIDTH) {
-        current_w = 0; // 行剛剛好填滿
+        current_w = 0; 
       }
     }
 
-    // 將剩餘的寬度用空白補滿，推至真正的下一行
+    // 將手動 Enter 換行剩餘的寬度用空白補滿，精準推至下一行
     if (i < lines.length - 1) {
       if (current_w > 0 || chars.length === 0) {
         let padUnits = GAME_MAX_WIDTH - current_w;
         if (chars.length === 0) padUnits = GAME_MAX_WIDTH; 
 
-        let fullSpaces = Math.floor(padUnits / 2);
-        let halfSpaces = padUnits % 2;
+        let fullSpaces = Math.floor(padUnits / WIDTH_FULL);
+        let remainingAfterFull = padUnits - (fullSpaces * WIDTH_FULL);
+        let halfSpaces = Math.ceil(remainingAfterFull / WIDTH_HALF);
 
         for(let s=0; s<fullSpaces; s++) finalChars.push("　");
         for(let s=0; s<halfSpaces; s++) finalChars.push(" ");
@@ -277,14 +291,13 @@ function getColorArray(text, groupSize) {
   return colorData;
 }
 
-// 僅供漸層模式使用的優化轉換
 function buildCode(colorData) {
   let code = "";
   let currentHex = null;
 
   for (let item of colorData) {
     if (/^[\s　]+$/.test(item.char)) {
-      code += item.char; // 空白不須額外加上色碼
+      code += item.char; 
     } else {
       if (item.hex !== currentHex) {
         code += item.hex + item.char;
@@ -297,7 +310,6 @@ function buildCode(colorData) {
   return code;
 }
 
-// 生成完美的一比一遊戲預覽畫面 HTML
 function buildPreview(colorData) {
   let html = "";
   let current_w = 0;
@@ -332,16 +344,13 @@ function getOptimalGradient(paddedText) {
   return bestSim;
 }
 
-// 單色模式轉換
 function getSolidText(paddedText) {
   let chars = Array.from(paddedText);
   let maxLen = SAFE_LIMIT - 7;
   if (chars.length > maxLen) chars = chars.slice(0, maxLen);
   let finalStr = chars.join('');
   
-  // 強制將單色代碼放在字串最前端
   let result = solidColor + finalStr; 
-  
   let colorData = chars.map(char => ({ char, hex: solidColor }));
   let previewHtml = buildPreview(colorData);
 
