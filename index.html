@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>燕雲十六聲 文字顏色代碼產生器</title>
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    --danger: #ef4444;
+    --success: #10b981;
+    --radius: 12px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+    background: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 20px 15px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 24px;
+    position: relative;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text-main);
+    text-align: center;
+  }
+
+  .mode-toggle {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    gap: 4px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mode-btn.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  
+  .line-info {
+    font-size: 13px;
+    color: var(--text-muted);
+    background: #f8fafc;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+
+  .counter {
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #e0e7ff;
+    color: var(--primary);
+    transition: all 0.3s;
+  }
+
+  .counter.warn { background: #fef3c7; color: #d97706; }
+  .counter.limit { background: #fee2e2; color: var(--danger); }
+
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 16px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  textarea:focus { border-color: var(--primary); }
+
+  .flex-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  button.action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+  }
+
+  button.action-btn:hover { background: #f9fafb; }
+  button.action-btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--primary) !important; color: white !important; border: none !important; }
+  .btn-primary:hover { background: var(--primary-hover) !important; }
+  
+  .section-title { font-size: 16px; font-weight: 600; margin: 24px 0 12px; color: var(--text-main); }
+
+  .theme-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    background: white; color: var(--text-main); flex: 1 1 calc(20% - 10px); min-width: 100px;
+  }
+  .theme-btn:hover { background: #f9fafb; }
+  .theme-btn.active { background: #eff6ff; border-color: var(--primary); color: var(--primary); }
+  .preview-bar { width: 100%; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
+
+  .custom-palette-container { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 12px; }
+  .color-nodes { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .color-picker-wrapper {
+    position: relative; display: flex; align-items: center; gap: 6px; background: white;
+    padding: 4px 8px 4px 4px; border-radius: 30px; border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; padding: 0; background: transparent; }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
+  .remove-color-btn { background: none; border: none; color: var(--text-muted); font-size: 16px; padding: 0 4px; cursor: pointer; line-height: 1; }
+  .remove-color-btn:hover { color: var(--danger); }
+  .add-color-btn { width: 32px; height: 32px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--text-muted); border: 2px dashed var(--border-color); background: none; cursor: pointer; }
+  .add-color-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .box { border-radius: var(--radius); padding: 16px; min-height: 80px; }
+  #preview {
+    background: #fafafa; border: 1px solid var(--border-color);
+    font-size: 22px; font-weight: bold; line-height: 1.8;
+    word-break: break-all; white-space: pre-wrap;
+  }
+  #output {
+    background: #1e293b; color: #a5b4fc; font-family: 'Courier New', Courier, monospace;
+    font-size: 15px; white-space: pre-wrap; word-break: break-all; line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 16px; }
+    h1 { font-size: 20px; }
+    button.action-btn { flex: 1 1 calc(50% - 10px); text-align: center; }
+    .btn-primary { flex: 1 1 100%; }
+    .theme-btn { flex: 1 1 calc(33.333% - 10px); }
+    .top-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>燕雲十六聲 文字顏色代碼產生器</h1>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="gradient" onclick="setMode('gradient')">🌈 漸層選色</button>
+    <button class="mode-btn" data-mode="solid" onclick="setMode('solid')">🎨 單一顏色</button>
+  </div>
+
+  <div class="top-bar">
+    <div class="line-info">💡 支援換行輸入，系統會自動轉換為遊戲內換行格式</div>
+    <div id="charCounter" class="counter">已使用：0 / 232</div>
+  </div>
+
+  <textarea id="inputText" placeholder="在此輸入文字，按下 Enter 換行..."></textarea>
+
+  <div class="flex-group">
+    <button class="action-btn btn-primary" onclick="copyResult()">📋 複製代碼結果</button>
+    <button class="action-btn" onclick="clearAll()">🗑️ 清空全部</button>
+  </div>
+
+  <div id="gradientSection">
+    <div class="section-title">🎨 選擇漸層風格</div>
+    <div class="flex-group">
+      <button class="theme-btn active" data-theme="gameVivid" onclick="setTheme('gameVivid')">
+        <div class="preview-bar" style="background: linear-gradient(to right, #ff2d55, #ff7a00, #ffd400, #66dd00, #00d6a3, #00b8ff);"></div>彩虹1
+      </button>
+      <button class="theme-btn" data-theme="warmRainbow" onclick="setTheme('warmRainbow')">
+        <div class="preview-bar" style="background: linear-gradient(to right, #ff4d4d, #ff7a45, #ffb340, #ffe14d, #b7e65c, #5fd17a, #33c7b5, #4db8ff);"></div>彩虹2
+      </button>
+      <button class="theme-btn" data-theme="candyRainbow" onclick="setTheme('candyRainbow')">
+        <div class="preview-bar" style="background: linear-gradient(to right, #ff6b6b, #ff9f68, #ffd166, #95d96b, #4dd4ac, #62c6ff);"></div>彩虹3
+      </button>
+      <button class="theme-btn" data-theme="macaron" onclick="setTheme('macaron')">
+        <div class="preview-bar" style="background: linear-gradient(to right, #ff8fa3, #ffb38a, #ffe08a, #bfe38a, #8ee3c4, #9ecbff);"></div>彩虹4
+      </button>
+      <button class="theme-btn" data-theme="custom" onclick="setTheme('custom')">
+        <div class="preview-bar" style="background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 5px, #f3f4f6 5px, #f3f4f6 10px);"></div>⚙️ 自訂
+      </button>
+    </div>
+    <div id="customPaletteContainer" class="custom-palette-container" style="display: none;">
+      <div style="font-size: 13px; color: #64748b; margin-bottom: 12px;">點擊色塊更改顏色，最少2色，最多8色。</div>
+      <div class="color-nodes" id="customColorNodes"></div>
+    </div>
+  </div>
+
+  <div id="solidSection" style="display: none;">
+    <div class="section-title">🎨 選擇單一顏色</div>
+    <div class="custom-palette-container">
+      <div class="color-picker-wrapper" style="width: max-content;">
+        <input type="color" id="solidColorInput" value="#ff2d55" oninput="updateSolidColor(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">✨ 結果預覽</div>
+  <div id="preview" class="box"></div>
+
+  <div class="section-title">💻 代碼</div>
+  <div id="output" class="box"></div>
+</div>
+
+<script>
+const SAFE_LIMIT = 232;
+const MAX_CUSTOM_COLORS = 8;
+const GAME_LINE_LENGTH = 32;
+
+const inputText = document.getElementById("inputText");
+const output = document.getElementById("output");
+const preview = document.getElementById("preview");
+const charCounter = document.getElementById("charCounter");
+const customPaletteContainer = document.getElementById("customPaletteContainer");
+const customColorNodes = document.getElementById("customColorNodes");
+
+let currentMode = "gradient"; 
+let currentTheme = "gameVivid"; 
+let solidColor = "#ff2d55"; 
+
+const THEMES = {
+  gameVivid: ["#ff2d55", "#ff7a00", "#ffd400", "#66dd00", "#00d6a3", "#00b8ff"],
+  warmRainbow: ["#ff4d4d", "#ff7a45", "#ffb340", "#ffe14d", "#b7e65c", "#5fd17a", "#33c7b5", "#4db8ff"],
+  candyRainbow: ["#ff6b6b", "#ff9f68", "#ffd166", "#95d96b", "#4dd4ac", "#62c6ff"],
+  macaron: ["#ff8fa3", "#ffb38a", "#ffe08a", "#bfe38a", "#8ee3c4", "#9ecbff"]
+};
+let customColors = ["#8b5cf6", "#ec4899"];
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
+  document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add("active");
+  document.getElementById("gradientSection").style.display = mode === "gradient" ? "block" : "none";
+  document.getElementById("solidSection").style.display = mode === "solid" ? "block" : "none";
+  updateAll();
+}
+
+function hexToRgb(hex) { return { r: parseInt(hex.substring(1, 3), 16), g: parseInt(hex.substring(3, 5), 16), b: parseInt(hex.substring(5, 7), 16) }; }
+function rgbToHex(r, g, b) { return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0"); }
+function interpolateColor(c1, c2, factor) { return { r: Math.round(c1.r + (c2.r - c1.r) * factor), g: Math.round(c1.g + (c2.g - c1.g) * factor), b: Math.round(c1.b + (c2.b - c1.b) * factor) }; }
+
+function getThemeColor(t) {
+  const palette = currentTheme === 'custom' ? customColors : THEMES[currentTheme];
+  const segCount = palette.length - 1;
+  const scaled = t * segCount;
+  const idx = Math.min(Math.floor(scaled), segCount - 1);
+  return interpolateColor(hexToRgb(palette[idx]), hexToRgb(palette[idx + 1]), scaled - idx);
+}
+
+function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+
+// 處理換行：根據遊戲邏輯填補全形空白
+function getPaddedText(text) {
+  const lines = text.split('\n');
+  let paddedLines = [];
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    let len = Array.from(line).length;
+    if (i < lines.length - 1) {
+      let remainder = len % GAME_LINE_LENGTH;
+      let padCount = (remainder === 0 && len > 0) ? 0 : GAME_LINE_LENGTH - remainder;
+      if (len === 0) padCount = GAME_LINE_LENGTH; 
+      paddedLines.push(line + "　".repeat(padCount));
+    } else {
+      paddedLines.push(line);
+    }
+  }
+  return paddedLines.join('');
+}
+
+// 核心演算法：根據長度動態分配顏色區塊，確保不過載且最高平滑度
+function buildGradientData(chars, groupSize) {
+  const totalGroups = Math.ceil(chars.length / groupSize);
+  let result = "", previewHtml = "";
+
+  for (let i = 0; i < totalGroups; i++) {
+    const chunk = chars.slice(i * groupSize, i * groupSize + groupSize).join("");
+    const ratio = totalGroups === 1 ? 0 : i / (totalGroups - 1);
+    const color = getThemeColor(ratio);
+    const hex = rgbToHex(color.r, color.g, color.b);
+
+    // 優化：若全為填補空白，省下色碼標籤長度
+    if (/^[\s　]+$/.test(chunk)) {
+      result += chunk;
+      previewHtml += chunk;
+    } else {
+      result += hex + chunk;
+      previewHtml += `<span style="color:${hex}">${escapeHtml(chunk)}</span>`;
+    }
+  }
+  return { result, previewHtml, length: Array.from(result).length };
+}
+
+function getOptimalGradient(paddedText) {
+  let chars = Array.from(paddedText);
+  
+  // 當輸入真的過長時強制裁切
+  while (chars.length > 0 && chars.length + 7 > SAFE_LIMIT) { chars.pop(); }
+  if (chars.length === 0) return { result: "", previewHtml: "", length: 0 };
+
+  // 跑迴圈找出最小群組單位 (1字1色最美，依序往上加到符合安全長度為止)
+  let bestSim = null;
+  for (let gs = 1; gs <= chars.length; gs++) {
+    let sim = buildGradientData(chars, gs);
+    if (sim.length <= SAFE_LIMIT) {
+      bestSim = sim;
+      break;
+    }
+  }
+  return bestSim;
+}
+
+function getSolidText(paddedText) {
+  let chars = Array.from(paddedText);
+  let maxLen = SAFE_LIMIT - 7;
+  if (chars.length > maxLen) chars = chars.slice(0, maxLen);
+  let finalStr = chars.join('');
+  let result = solidColor + finalStr;
+  let previewHtml = `<span style="color:${solidColor}">${escapeHtml(finalStr)}</span>`;
+  return { result, previewHtml, length: Array.from(result).length };
+}
+
+function updateAll() {
+  let text = inputText.value;
+  if (!text) {
+    output.textContent = ""; preview.innerHTML = "";
+    charCounter.textContent = `已使用：0 / ${SAFE_LIMIT}`;
+    charCounter.className = "counter";
+    return;
+  }
+
+  let paddedText = getPaddedText(text);
+  let built = currentMode === "gradient" ? getOptimalGradient(paddedText) : getSolidText(paddedText);
+  
+  output.textContent = built.result;
+  preview.innerHTML = built.previewHtml;
+  charCounter.textContent = `已使用：${built.length} / ${SAFE_LIMIT}`;
+
+  charCounter.className = "counter";
+  if (built.length >= SAFE_LIMIT) charCounter.classList.add("limit");
+  else if (built.length >= 200) charCounter.classList.add("warn");
+}
+
+function updateSolidColor(color) { solidColor = color; updateAll(); }
+
+function renderCustomPalette() {
+  customColorNodes.innerHTML = "";
+  customColors.forEach((color, index) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "color-picker-wrapper";
+    const input = document.createElement("input");
+    input.type = "color"; input.value = color;
+    input.addEventListener("input", (e) => { customColors[index] = e.target.value; updateAll(); });
+    wrapper.appendChild(input);
+
+    if (customColors.length > 2) {
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "remove-color-btn"; removeBtn.innerHTML = "×";
+      removeBtn.onclick = () => { customColors.splice(index, 1); renderCustomPalette(); updateAll(); };
+      wrapper.appendChild(removeBtn);
+    }
+    customColorNodes.appendChild(wrapper);
+  });
+
+  if (customColors.length < MAX_CUSTOM_COLORS) {
+    const addBtn = document.createElement("button");
+    addBtn.className = "add-color-btn"; addBtn.innerHTML = "+";
+    addBtn.onclick = () => { customColors.push("#000000"); renderCustomPalette(); updateAll(); };
+    customColorNodes.appendChild(addBtn);
+  }
+}
+
+function setTheme(themeKey) {
+  currentTheme = themeKey;
+  document.querySelectorAll(".theme-btn").forEach(btn => btn.classList.remove("active"));
+  document.querySelector(`.theme-btn[data-theme="${themeKey}"]`).classList.add("active");
+  customPaletteContainer.style.display = themeKey === "custom" ? "block" : "none";
+  if (themeKey === "custom") renderCustomPalette();
+  updateAll();
+}
+
+function copyResult() {
+  if (!output.textContent) return alert("目前沒有可複製的結果");
+  navigator.clipboard.writeText(output.textContent)
+    .then(() => alert("✅ 已成功複製代碼！"))
+    .catch(() => alert("❌ 複製失敗，請手動框選複製"));
+}
+
+function clearAll() { inputText.value = ""; updateAll(); }
+
+inputText.addEventListener("input", updateAll);
+renderCustomPalette();
+updateAll();
+</script>
+</body>
+</html>
