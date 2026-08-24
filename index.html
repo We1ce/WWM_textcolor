@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>燕雲十六聲 文字顏色代碼產生器</title>
+<title>燕雲十六聲 文字代碼工具</title>
 <style>
   :root {
     --primary: #4f46e5;
@@ -13,433 +13,409 @@
     --text-main: #1f2937;
     --text-muted: #6b7280;
     --border-color: #e5e7eb;
-    --danger: #ef4444;
-    --success: #10b981;
     --radius: 12px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Microsoft JhengHei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif;
     background: var(--bg-color); color: var(--text-main);
     line-height: 1.6; padding: 20px 15px;
   }
 
   .container {
-    max-width: 800px; margin: 0 auto; background: var(--card-bg);
+    max-width: 850px; margin: 0 auto; background: var(--card-bg);
     border-radius: var(--radius); padding: 24px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
   }
 
   h1 { font-size: 24px; font-weight: 700; margin-bottom: 12px; text-align: center; }
 
-  /* 製作者名單按鈕樣式 */
+  .main-nav {
+    display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;
+  }
+  .nav-btn {
+    padding: 8px 16px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; color: var(--text-muted); border-radius: 8px;
+  }
+  .nav-btn.active { background: var(--primary); color: white; }
+
   .credits {
     display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;
   }
   .credit-btn {
     background: #f8fafc; border: 1px solid var(--border-color); color: var(--text-muted);
     padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
-    display: inline-flex; align-items: center; transition: all 0.2s; cursor: default;
-  }
-  .credit-btn:hover {
-    background: white; border-color: var(--primary); color: var(--primary);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
 
   .mode-toggle { display: flex; background: #f1f5f9; padding: 4px; border-radius: 8px; margin-bottom: 16px; gap: 4px; }
   .mode-btn {
     flex: 1; padding: 10px; border: none; background: transparent;
-    border-radius: 6px; font-size: 15px; font-weight: 600;
-    color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+    border-radius: 6px; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer;
   }
   .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-  .top-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 12px; font-size: 14px; gap: 12px; flex-wrap: wrap; }
-  
-  .counter { font-weight: 600; padding: 6px 12px; border-radius: 20px; background: #e0e7ff; color: var(--primary); transition: all 0.3s; }
-  .counter.warn { background: #fef3c7; color: #d97706; }
-  .counter.limit { background: #fee2e2; color: var(--danger); }
-
+  .fixed-width-wrapper {
+    width: 464px; margin: 0 auto 16px;
+  }
   textarea {
-    width: 100%; min-height: 120px; resize: vertical; border: 2px solid var(--border-color);
-    border-radius: var(--radius); padding: 16px; font-size: 16px; outline: none; transition: border-color 0.2s; margin-bottom: 16px; line-height: 1.5;
+    width: 100%; min-height: 180px; resize: none; border: 2px solid var(--border-color);
+    border-radius: var(--radius); padding: 10px; font-size: 18px; outline: none;
+    font-family: "Gill Sans Nova", "Gill Sans MT", "Gill Sans", "DFKai-SB", "標楷體", serif;
+    line-height: 1.6; letter-spacing: 0px;
   }
   textarea:focus { border-color: var(--primary); }
 
-  .flex-group { display: flex; gap: 10px; flex-wrap: wrap; }
-  button.action-btn { border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: white; border: 1px solid var(--border-color); color: var(--text-main); }
-  button.action-btn:hover { background: #f9fafb; }
-  button.action-btn:active { transform: scale(0.98); }
-  .btn-primary { background: var(--primary) !important; color: white !important; border: none !important; }
-  .btn-primary:hover { background: var(--primary-hover) !important; }
+  .flex-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+  button.action-btn { border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; background: white; border: 1px solid var(--border-color); }
+  .btn-primary { background: var(--primary) !important; color: white !important; }
   
   .section-title { font-size: 16px; font-weight: 600; margin: 24px 0 12px; color: var(--text-main); }
 
   .theme-btn {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
     border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px;
-    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: white; color: var(--text-main); flex: 1 1 calc(20% - 10px); min-width: 100px;
+    font-size: 14px; font-weight: 600; cursor: pointer; background: white; flex: 1 1 calc(20% - 10px); min-width: 100px;
   }
-  .theme-btn:hover { background: #f9fafb; }
   .theme-btn.active { background: #eff6ff; border-color: var(--primary); color: var(--primary); }
-  .preview-bar { width: 100%; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
+  .preview-bar { width: 100%; height: 14px; border-radius: 4px; }
+
+  .color-palette { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center; }
+  .color-circle {
+    width: 36px; height: 36px; border-radius: 50%; border: 2px solid white; 
+    box-shadow: 0 0 0 1px var(--border-color); cursor: pointer; transition: transform 0.2s;
+  }
+  .color-circle:hover { transform: scale(1.1); }
 
   .custom-palette-container { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 12px; }
   .color-nodes { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-  .color-picker-wrapper { position: relative; display: flex; align-items: center; gap: 6px; background: white; padding: 4px 8px 4px 4px; border-radius: 30px; border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-  input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; padding: 0; background: transparent; }
-  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
-  .remove-color-btn { background: none; border: none; color: var(--text-muted); font-size: 16px; padding: 0 4px; cursor: pointer; line-height: 1; }
-  .remove-color-btn:hover { color: var(--danger); }
-  .add-color-btn { width: 32px; height: 32px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--text-muted); border: 2px dashed var(--border-color); background: none; cursor: pointer; }
-  .add-color-btn:hover { border-color: var(--primary); color: var(--primary); }
+  input[type="color"] { -webkit-appearance: none; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; background: transparent; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
 
-  .box { border-radius: var(--radius); padding: 16px; min-height: 80px; }
-  
-  #preview {
-    background: #2c2c2e; color: #e5e5e5; border: 1px solid var(--border-color);
-    font-size: 18px; line-height: 1.8; letter-spacing: 0.5px;
-    font-family: "NSimSun", "SimSun", "PMingLiU", "Songti TC", "STSong", serif;
-    white-space: pre-wrap; word-break: break-all; padding: 20px;
+  .preview-container {
+    background: #000000; padding: 20px; border-radius: 8px; min-height: 120px;
+    width: 504px; margin: 0 auto;
   }
-  
-  #output {
-    background: #f1f5f9; color: #334155; font-family: 'Courier New', Courier, monospace;
-    font-size: 15px; white-space: pre-wrap; word-break: break-all; line-height: 1.6;
+  #preview, #viewerPreview {
+    color: #ffffff; font-size: 18px; line-height: 1.6; letter-spacing: 0px;
+    font-family: "Gill Sans Nova", "Gill Sans MT", "Gill Sans", "DFKai-SB", "標楷體", serif;
+    white-space: pre-wrap; word-break: break-all; width: 464px;
   }
 
-  @media (max-width: 600px) {
-    .container { padding: 16px; }
-    h1 { font-size: 20px; }
-    button.action-btn { flex: 1 1 calc(50% - 10px); text-align: center; }
-    .btn-primary { flex: 1 1 100%; }
-    .theme-btn { flex: 1 1 calc(33.333% - 10px); }
+  .output-box {
+    background: #f1f5f9; color: #334155; font-family: monospace;
+    font-size: 15px; white-space: pre-wrap; word-break: break-all; padding: 16px; border-radius: 8px;
+    margin-top: 12px;
   }
+
+  .hidden { display: none; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>燕雲十六聲 文字顏色代碼產生器</h1>
+  <h1>燕雲十六聲 文字代碼工具</h1>
   
-  <!-- 製作者名單 -->
   <div class="credits">
-    <div class="credit-btn">🎨 原創製作｜神勇牛奶糖</div>
-    <div class="credit-btn">🛠️ 編修上傳｜Chilum</div>
+    <div class="credit-btn">原創製作｜神勇牛奶糖</div>
+    <div class="credit-btn">編修上傳｜Chilum</div>
   </div>
 
-  <div class="mode-toggle">
-    <button class="mode-btn active" data-mode="gradient" onclick="setMode('gradient')">🌈 漸層選色</button>
-    <button class="mode-btn" data-mode="solid" onclick="setMode('solid')">🎨 單一顏色</button>
+  <div class="main-nav">
+    <button class="nav-btn active" onclick="switchTab('generator')">代碼產生器</button>
+    <button class="nav-btn" onclick="switchTab('viewer')">代碼還原預覽</button>
   </div>
 
-  <div class="top-bar">
-    <div id="charCounter" class="counter">已使用：0 / 232</div>
-  </div>
+  <div id="tab-generator">
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="gradient" onclick="setMode('gradient')">漸層選色</button>
+      <button class="mode-btn" data-mode="solid" onclick="setMode('solid')">單一顏色</button>
+    </div>
 
-  <textarea id="inputText" placeholder="在此輸入文字，按下 Enter 換行..."></textarea>
+    <div style="text-align: right; width: 464px; margin: 0 auto 5px;">
+      <span id="charCounter" style="font-weight:bold; color:var(--primary); font-size: 14px;">已使用：0 / 232</span>
+    </div>
 
-  <div class="flex-group">
-    <button class="action-btn btn-primary" onclick="copyResult()">📋 複製代碼結果</button>
-    <button class="action-btn" onclick="clearAll()">🗑️ 清空全部</button>
-  </div>
+    <div class="fixed-width-wrapper">
+      <textarea id="inputText" placeholder="在此輸入文字，Enter 將補足推擠空格..."></textarea>
+    </div>
 
-  <div id="gradientSection">
-    <div class="section-title">🎨 選擇漸層風格</div>
     <div class="flex-group">
-      <button class="theme-btn active" data-theme="gameVivid" onclick="setTheme('gameVivid')">
-        <div class="preview-bar" style="background: linear-gradient(to right, #ff2d55, #ff7a00, #ffd400, #66dd00, #00d6a3, #00b8ff);"></div>彩虹1
-      </button>
-      <button class="theme-btn" data-theme="warmRainbow" onclick="setTheme('warmRainbow')">
-        <div class="preview-bar" style="background: linear-gradient(to right, #ff4d4d, #ff7a45, #ffb340, #ffe14d, #b7e65c, #5fd17a, #33c7b5, #4db8ff);"></div>彩虹2
-      </button>
-      <button class="theme-btn" data-theme="candyRainbow" onclick="setTheme('candyRainbow')">
-        <div class="preview-bar" style="background: linear-gradient(to right, #ff6b6b, #ff9f68, #ffd166, #95d96b, #4dd4ac, #62c6ff);"></div>彩虹3
-      </button>
-      <button class="theme-btn" data-theme="macaron" onclick="setTheme('macaron')">
-        <div class="preview-bar" style="background: linear-gradient(to right, #ff8fa3, #ffb38a, #ffe08a, #bfe38a, #8ee3c4, #9ecbff);"></div>彩虹4
-      </button>
-      <button class="theme-btn" data-theme="custom" onclick="setTheme('custom')">
-        <div class="preview-bar" style="background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 5px, #f3f4f6 5px, #f3f4f6 10px);"></div>⚙️ 自訂
-      </button>
+      <button class="action-btn btn-primary" onclick="copyResult()">複製代碼結果</button>
+      <button class="action-btn" onclick="clearAll()">清空全部</button>
     </div>
-    <div id="customPaletteContainer" class="custom-palette-container" style="display: none;">
-      <div style="font-size: 13px; color: #64748b; margin-bottom: 12px;">點擊色塊更改顏色，最少2色，最多8色。</div>
-      <div class="color-nodes" id="customColorNodes"></div>
-    </div>
-  </div>
 
-  <div id="solidSection" style="display: none;">
-    <div class="section-title">🎨 選擇單一顏色</div>
-    <div class="custom-palette-container">
-      <div class="color-picker-wrapper" style="width: max-content;">
-        <input type="color" id="solidColorInput" value="#ff2d55" oninput="updateSolidColor(this.value)">
+    <div id="gradientSection">
+      <div class="section-title">選擇漸層風格</div>
+      <div class="flex-group">
+        <button class="theme-btn active" data-theme="vivid" onclick="setTheme('vivid')">
+          <div class="preview-bar" style="background: linear-gradient(to right, #ff2d55, #ff7a00, #ffd400, #66dd00, #00d6a3, #00b8ff);"></div>彩虹1
+        </button>
+        <button class="theme-btn" data-theme="warm" onclick="setTheme('warm')">
+          <div class="preview-bar" style="background: linear-gradient(to right, #ff4d4d, #ff7a45, #ffb340, #ffe14d, #b7e65c, #5fd17a, #33c7b5, #4db8ff);"></div>彩虹2
+        </button>
+        <button class="theme-btn" data-theme="candy" onclick="setTheme('candy')">
+          <div class="preview-bar" style="background: linear-gradient(to right, #ff6b6b, #ff9f68, #ffd166, #95d96b, #4dd4ac, #62c6ff);"></div>彩虹3
+        </button>
+        <button class="theme-btn" data-theme="macaron" onclick="setTheme('macaron')">
+          <div class="preview-bar" style="background: linear-gradient(to right, #ff8fa3, #ffb38a, #ffe08a, #bfe38a, #8ee3c4, #9ecbff);"></div>彩虹4
+        </button>
+        <button class="theme-btn" data-theme="custom" onclick="setTheme('custom')">
+          <div class="preview-bar" style="background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 5px, #f3f4f6 5px, #f3f4f6 10px);"></div>自訂
+        </button>
+      </div>
+      <div id="customPaletteContainer" class="custom-palette-container" style="display: none;">
+        <div class="color-nodes" id="customColorNodes"></div>
       </div>
     </div>
+
+    <div id="solidSection" class="hidden">
+      <div class="section-title">選擇顏色</div>
+      <div class="color-palette">
+        <div class="color-circle" style="background: #f3d39c;" onclick="applyShorthand('#Y', '#f3d39c')"></div>
+        <div class="color-circle" style="background: #c0e695;" onclick="applyShorthand('#G', '#c0e695')"></div>
+        <div class="color-circle" style="background: #b19cd9;" onclick="applyShorthand('#P', '#b19cd9')"></div>
+        <div class="color-circle" style="background: #e66767;" onclick="applyShorthand('#O', '#e66767')"></div>
+        <div class="color-circle" style="background: #ffffff;" onclick="applyShorthand('#W', '#ffffff')"></div>
+        <div class="color-circle" style="background: #66ccff;" onclick="applyShorthand('#B', '#66ccff')"></div>
+        <div style="margin-left: 10px; display: flex; align-items: center; gap: 8px;">
+          <input type="color" id="solidColorPicker" value="#66ccff" oninput="updateSolidColor(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">遊戲效果預覽</div>
+    <div class="preview-container">
+      <div id="preview"></div>
+    </div>
+
+    <div class="section-title">代碼結果</div>
+    <div id="output" class="output-box"></div>
   </div>
 
-  <div class="section-title">✨ 結果預覽</div>
-  <div id="preview" class="box"></div>
-
-  <div class="section-title">💻 代碼</div>
-  <div id="output" class="box"></div>
+  <div id="tab-viewer" class="hidden">
+    <div class="section-title">貼上含有代碼與空格的訊息內容</div>
+    <div class="fixed-width-wrapper">
+      <textarea id="viewerInput" placeholder="在此貼上代碼內容..."></textarea>
+    </div>
+    <div class="section-title">還原實際呈現效果</div>
+    <div class="preview-container">
+      <div id="viewerPreview"></div>
+    </div>
+  </div>
 </div>
 
 <script>
+// 核心設定：根據最新比例調整
 const SAFE_LIMIT = 232;
-const MAX_CUSTOM_COLORS = 8;
+const GAME_MAX_WIDTH = 640; // 16 全形 * 40
+const WIDTH_HALF = 25;      // 16 全形對應 40，則半形 4:2.5 換算為 25
+const WIDTH_FULL = 40;      
 
-// 全新精確比例演算法 (16中文字 = 29英文字)
-// 設定每一行的總寬度為 16 與 29 的最小公倍數 (16 * 29 = 464)
-const GAME_MAX_WIDTH = 464; 
-const WIDTH_HALF = 16;      // 半形字元(英文/數字/半形空白) 佔用寬度 16
-const WIDTH_FULL = 29;      // 全形字元(中文/全形空白) 佔用寬度 29
+const SHORTHAND_MAP = {
+  '#Y': '#f3d39c', '#G': '#c0e695', '#P': '#b19cd9',
+  '#O': '#e66767', '#W': '#ffffff', '#R': '#f0b7bd', '#B': '#66ccff'
+};
 
-const inputText = document.getElementById("inputText");
-const output = document.getElementById("output");
-const preview = document.getElementById("preview");
-const charCounter = document.getElementById("charCounter");
-const customPaletteContainer = document.getElementById("customPaletteContainer");
-const customColorNodes = document.getElementById("customColorNodes");
-
-let currentMode = "gradient"; 
-let currentTheme = "gameVivid"; 
-let solidColor = "#ff2d55"; 
-
-const THEMES = {
-  gameVivid: ["#ff2d55", "#ff7a00", "#ffd400", "#66dd00", "#00d6a3", "#00b8ff"],
-  warmRainbow: ["#ff4d4d", "#ff7a45", "#ffb340", "#ffe14d", "#b7e65c", "#5fd17a", "#33c7b5", "#4db8ff"],
-  candyRainbow: ["#ff6b6b", "#ff9f68", "#ffd166", "#95d96b", "#4dd4ac", "#62c6ff"],
+const GRADIENT_THEMES = {
+  vivid: ["#ff2d55", "#ff7a00", "#ffd400", "#66dd00", "#00d6a3", "#00b8ff"],
+  warm: ["#ff4d4d", "#ff7a45", "#ffb340", "#ffe14d", "#b7e65c", "#5fd17a", "#33c7b5", "#4db8ff"],
+  candy: ["#ff6b6b", "#ff9f68", "#ffd166", "#95d96b", "#4dd4ac", "#62c6ff"],
   macaron: ["#ff8fa3", "#ffb38a", "#ffe08a", "#bfe38a", "#8ee3c4", "#9ecbff"]
 };
+
+let currentMode = "gradient";
+let currentTheme = "vivid";
+let solidPrefix = "#66ccff";
+let solidColor = "#66ccff";
 let customColors = ["#8b5cf6", "#ec4899"];
 
-function setMode(mode) {
-  currentMode = mode;
-  document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
-  document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add("active");
-  document.getElementById("gradientSection").style.display = mode === "gradient" ? "block" : "none";
-  document.getElementById("solidSection").style.display = mode === "solid" ? "block" : "none";
-  updateAll();
+function switchTab(tab) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-generator').classList.add('hidden');
+  document.getElementById('tab-viewer').classList.add('hidden');
+  if (tab === 'generator') {
+    document.querySelector('.nav-btn:nth-child(1)').classList.add('active');
+    document.getElementById('tab-generator').classList.remove('hidden');
+  } else {
+    document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
+    document.getElementById('tab-viewer').classList.remove('hidden');
+  }
 }
 
-function hexToRgb(hex) { return { r: parseInt(hex.substring(1, 3), 16), g: parseInt(hex.substring(3, 5), 16), b: parseInt(hex.substring(5, 7), 16) }; }
-function rgbToHex(r, g, b) { return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0"); }
+function getCharWidth(char) {
+  return char.match(/[^\x00-\xff]/) ? WIDTH_FULL : WIDTH_HALF;
+}
+
+// 產生器：手動 Enter 補足空格 (不計代碼寬度)
+function processAutoPadding(rawText) {
+  const lines = rawText.split('\n');
+  let resultChars = [];
+  for (let i = 0; i < lines.length; i++) {
+    // 排除代碼後計算純文字寬度
+    const lineOnly = lines[i].replace(/(#[0-9a-fA-F]{6}|#[a-zA-Z]{1})/g, "");
+    let currentWidth = 0;
+    for (let char of Array.from(lineOnly)) {
+      currentWidth += getCharWidth(char);
+    }
+    
+    // 放入原字元
+    for (let char of Array.from(lines[i])) resultChars.push(char);
+
+    if (i < lines.length - 1) {
+      let remaining = GAME_MAX_WIDTH - (currentWidth % GAME_MAX_WIDTH);
+      if (currentWidth > 0 && remaining === GAME_MAX_WIDTH) remaining = 0;
+      
+      while (remaining >= WIDTH_FULL) { resultChars.push("　"); remaining -= WIDTH_FULL; }
+      while (remaining >= WIDTH_HALF) { resultChars.push(" "); remaining -= WIDTH_HALF; }
+    }
+  }
+  return resultChars;
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.substring(1, 3), 16), g = parseInt(hex.substring(3, 5), 16), b = parseInt(hex.substring(5, 7), 16);
+  return { r, g, b };
+}
+function rgbToHex(r, g, b) { return "#" + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0'); }
 function interpolateColor(c1, c2, factor) { return { r: Math.round(c1.r + (c2.r - c1.r) * factor), g: Math.round(c1.g + (c2.g - c1.g) * factor), b: Math.round(c1.b + (c2.b - c1.b) * factor) }; }
 
 function getThemeColor(t) {
-  const palette = currentTheme === 'custom' ? customColors : THEMES[currentTheme];
+  const palette = currentTheme === 'custom' ? customColors : GRADIENT_THEMES[currentTheme];
   const segCount = palette.length - 1;
   const scaled = t * segCount;
   const idx = Math.min(Math.floor(scaled), segCount - 1);
   return interpolateColor(hexToRgb(palette[idx]), hexToRgb(palette[idx + 1]), scaled - idx);
 }
 
-function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+function applyShorthand(code, hex) { solidPrefix = code; solidColor = hex; document.getElementById("solidColorPicker").value = hex; updateAll(); }
+function updateSolidColor(hex) { solidPrefix = hex; solidColor = hex; updateAll(); }
 
-// 判斷字元寬度
-function getCharWidth(char) {
-  return char.match(/[^\x00-\xff]/) ? WIDTH_FULL : WIDTH_HALF;
-}
-
-// 依照全新比例填滿換行空格
-function getPaddedText(text) {
-  const lines = text.split('\n');
-  let finalChars = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    let chars = Array.from(lines[i]);
-    let current_w = 0;
-
-    for (let char of chars) {
-      let cw = getCharWidth(char);
-      
-      // 如果加起來會超過單行上限(464)，強制填補剩餘空間
-      if (current_w + cw > GAME_MAX_WIDTH) {
-        let padUnits = GAME_MAX_WIDTH - current_w;
-        
-        let fullSpaces = Math.floor(padUnits / WIDTH_FULL);
-        let remainingAfterFull = padUnits - (fullSpaces * WIDTH_FULL);
-        // 使用無條件進位，確保塞入的空白能確切擠到下一行
-        let halfSpaces = Math.ceil(remainingAfterFull / WIDTH_HALF); 
-
-        for(let s=0; s<fullSpaces; s++) finalChars.push("　");
-        for(let s=0; s<halfSpaces; s++) finalChars.push(" ");
-        
-        current_w = 0; 
-      }
-
-      finalChars.push(char);
-      current_w += cw;
-
-      if (current_w === GAME_MAX_WIDTH) {
-        current_w = 0; 
-      }
-    }
-
-    // 將手動 Enter 換行剩餘的寬度用空白補滿，精準推至下一行
-    if (i < lines.length - 1) {
-      if (current_w > 0 || chars.length === 0) {
-        let padUnits = GAME_MAX_WIDTH - current_w;
-        if (chars.length === 0) padUnits = GAME_MAX_WIDTH; 
-
-        let fullSpaces = Math.floor(padUnits / WIDTH_FULL);
-        let remainingAfterFull = padUnits - (fullSpaces * WIDTH_FULL);
-        let halfSpaces = Math.ceil(remainingAfterFull / WIDTH_HALF);
-
-        for(let s=0; s<fullSpaces; s++) finalChars.push("　");
-        for(let s=0; s<halfSpaces; s++) finalChars.push(" ");
-      }
-    }
-  }
-  return finalChars.join('');
-}
-
-function getColorArray(text, groupSize) {
-  let chars = Array.from(text);
-  let totalGroups = Math.ceil(chars.length / groupSize);
-  let colorData = [];
-
-  for (let i = 0; i < totalGroups; i++) {
-    const chunk = chars.slice(i * groupSize, i * groupSize + groupSize);
-    const ratio = totalGroups === 1 ? 0 : i / (totalGroups - 1);
-    const hex = rgbToHex(getThemeColor(ratio).r, getThemeColor(ratio).g, getThemeColor(ratio).b);
-    for (let char of chunk) colorData.push({ char, hex });
-  }
-  return colorData;
-}
-
-function buildCode(colorData) {
-  let code = "";
-  let currentHex = null;
-
-  for (let item of colorData) {
-    if (/^[\s　]+$/.test(item.char)) {
-      code += item.char; 
-    } else {
-      if (item.hex !== currentHex) {
-        code += item.hex + item.char;
-        currentHex = item.hex;
-      } else {
-        code += item.char;
-      }
-    }
-  }
-  return code;
-}
-
-function buildPreview(colorData) {
-  let html = "";
-  let current_w = 0;
-
-  for (let item of colorData) {
-    let cw = getCharWidth(item.char);
-    if (current_w + cw > GAME_MAX_WIDTH) {
-      html += "\n";
-      current_w = cw;
-    } else {
-      current_w += cw;
-    }
-    html += `<span style="color:${item.hex}">${escapeHtml(item.char)}</span>`;
-  }
-  return html;
-}
-
-function getOptimalGradient(paddedText) {
-  let chars = Array.from(paddedText);
-  while (chars.length > 0 && chars.length + 7 > SAFE_LIMIT) chars.pop();
-  if (chars.length === 0) return { result: "", previewHtml: "", length: 0 };
-
-  let bestSim = null;
-  for (let gs = 1; gs <= chars.length; gs++) {
-    let colorData = getColorArray(chars.join(''), gs);
-    let code = buildCode(colorData);
-    if (Array.from(code).length <= SAFE_LIMIT) {
-      bestSim = { result: code, previewHtml: buildPreview(colorData), length: Array.from(code).length };
-      break;
-    }
-  }
-  return bestSim;
-}
-
-function getSolidText(paddedText) {
-  let chars = Array.from(paddedText);
-  let maxLen = SAFE_LIMIT - 7;
-  if (chars.length > maxLen) chars = chars.slice(0, maxLen);
-  let finalStr = chars.join('');
-  
-  let result = solidColor + finalStr; 
-  let colorData = chars.map(char => ({ char, hex: solidColor }));
-  let previewHtml = buildPreview(colorData);
-
-  return { result, previewHtml, length: Array.from(result).length };
-}
-
-function updateAll() {
-  let text = inputText.value;
-  if (!text) {
-    output.textContent = ""; preview.innerHTML = "";
-    charCounter.textContent = `已使用：0 / ${SAFE_LIMIT}`;
-    charCounter.className = "counter"; return;
-  }
-
-  let paddedText = getPaddedText(text);
-  let built = currentMode === "gradient" ? getOptimalGradient(paddedText) : getSolidText(paddedText);
-  
-  output.textContent = built.result;
-  preview.innerHTML = built.previewHtml;
-  charCounter.textContent = `已使用：${built.length} / ${SAFE_LIMIT}`;
-
-  charCounter.className = "counter";
-  if (built.length >= SAFE_LIMIT) charCounter.classList.add("limit");
-  else if (built.length >= 200) charCounter.classList.add("warn");
-}
-
-function updateSolidColor(color) { solidColor = color; updateAll(); }
-
-function renderCustomPalette() {
-  customColorNodes.innerHTML = "";
-  customColors.forEach((color, index) => {
-    const wrapper = document.createElement("div"); wrapper.className = "color-picker-wrapper";
-    const input = document.createElement("input"); input.type = "color"; input.value = color;
-    input.addEventListener("input", (e) => { customColors[index] = e.target.value; updateAll(); });
-    wrapper.appendChild(input);
-
-    if (customColors.length > 2) {
-      const removeBtn = document.createElement("button"); removeBtn.className = "remove-color-btn"; removeBtn.innerHTML = "×";
-      removeBtn.onclick = () => { customColors.splice(index, 1); renderCustomPalette(); updateAll(); };
-      wrapper.appendChild(removeBtn);
-    }
-    customColorNodes.appendChild(wrapper);
-  });
-
-  if (customColors.length < MAX_CUSTOM_COLORS) {
-    const addBtn = document.createElement("button"); addBtn.className = "add-color-btn"; addBtn.innerHTML = "+";
-    addBtn.onclick = () => { customColors.push("#000000"); renderCustomPalette(); updateAll(); };
-    customColorNodes.appendChild(addBtn);
-  }
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
+  document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add("active");
+  document.getElementById("gradientSection").classList.toggle("hidden", mode !== "gradient");
+  document.getElementById("solidSection").classList.toggle("hidden", mode !== "solid");
+  updateAll();
 }
 
 function setTheme(themeKey) {
   currentTheme = themeKey;
   document.querySelectorAll(".theme-btn").forEach(btn => btn.classList.remove("active"));
   document.querySelector(`.theme-btn[data-theme="${themeKey}"]`).classList.add("active");
-  customPaletteContainer.style.display = themeKey === "custom" ? "block" : "none";
+  document.getElementById("customPaletteContainer").style.display = themeKey === "custom" ? "block" : "none";
   if (themeKey === "custom") renderCustomPalette();
   updateAll();
 }
 
-function copyResult() {
-  if (!output.textContent) return alert("目前沒有可複製的結果");
-  navigator.clipboard.writeText(output.textContent).then(() => alert("✅ 已成功複製代碼！")).catch(() => alert("❌ 複製失敗，請手手動框選複製"));
+function renderCustomPalette() {
+  const container = document.getElementById("customColorNodes"); container.innerHTML = "";
+  customColors.forEach((color, index) => {
+    const wrapper = document.createElement("div"); wrapper.className = "color-picker-wrapper";
+    const input = document.createElement("input"); input.type = "color"; input.value = color;
+    input.oninput = (e) => { customColors[index] = e.target.value; updateAll(); };
+    wrapper.appendChild(input);
+    if (customColors.length > 2) {
+      const btn = document.createElement("button"); btn.innerHTML = "×"; btn.style.border="none"; btn.style.background="none"; btn.style.cursor="pointer";
+      btn.onclick = () => { customColors.splice(index, 1); renderCustomPalette(); updateAll(); };
+      wrapper.appendChild(btn);
+    }
+    container.appendChild(wrapper);
+  });
+  if (customColors.length < 8) {
+    const add = document.createElement("button"); add.innerHTML = "+"; add.style.width="30px"; add.style.height="30px"; add.style.borderRadius="50%"; add.style.border="1px dashed #ccc"; add.onclick = () => { customColors.push("#000000"); renderCustomPalette(); updateAll(); };
+    container.appendChild(add);
+  }
 }
 
-function clearAll() { inputText.value = ""; updateAll(); }
+function renderPreview(colorData, target) {
+  target.innerHTML = ""; 
+  let html = "";
+  let currentWidth = 0;
+  for (let item of colorData) {
+    let cw = getCharWidth(item.char);
+    if (currentWidth + cw > GAME_MAX_WIDTH) { html += "<br>"; currentWidth = cw; }
+    else { currentWidth += cw; }
+    const safeChar = item.char === " " ? "&nbsp;" : item.char === "　" ? "&emsp;" : item.char.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    html += `<span style="color:${item.hex}">${safeChar}</span>`;
+  }
+  target.innerHTML = html;
+}
 
-inputText.addEventListener("input", updateAll);
-renderCustomPalette();
+// 還原預覽解析：手動 Enter 轉為全形空格 (40)
+function parseViewerCodes(input) {
+  const cleanInput = input.replace(/[\n\r]/g, "　"); 
+  const regex = /(#[0-9a-fA-F]{6}|#[a-zA-Z]{1})/g;
+  let colorData = [];
+  let lastIndex = 0;
+  let currentColor = "#ffffff";
+  let match;
+  while ((match = regex.exec(cleanInput)) !== null) {
+    const textBefore = cleanInput.substring(lastIndex, match.index);
+    for (let char of Array.from(textBefore)) colorData.push({ char, hex: currentColor });
+    const tag = match[0];
+    if (tag.length === 7) currentColor = tag;
+    else if (SHORTHAND_MAP[tag.toUpperCase()]) currentColor = SHORTHAND_MAP[tag.toUpperCase()];
+    lastIndex = regex.lastIndex;
+  }
+  const remainingText = cleanInput.substring(lastIndex);
+  for (let char of Array.from(remainingText)) colorData.push({ char, hex: currentColor });
+  return colorData;
+}
+
+function updateViewer() {
+  const input = document.getElementById("viewerInput").value;
+  const target = document.getElementById("viewerPreview");
+  if(!input) { target.innerHTML = ""; return; }
+  renderPreview(parseViewerCodes(input), target);
+}
+
+function updateAll() {
+  const rawText = document.getElementById("inputText").value;
+  const output = document.getElementById("output");
+  const preview = document.getElementById("preview");
+  const charCounter = document.getElementById("charCounter");
+  if (!rawText) { output.textContent = ""; preview.innerHTML = ""; charCounter.textContent = "已使用：0 / 232"; return; }
+  
+  const paddedChars = processAutoPadding(rawText);
+  let resultText = "";
+  let colorData = [];
+  
+  const textOnly = paddedChars.join('').replace(/(#[0-9a-fA-F]{6}|#[a-zA-Z]{1})/g, "");
+  const charsForColor = Array.from(textOnly);
+
+  if (currentMode === "solid") {
+    resultText = solidPrefix + textOnly;
+    colorData = charsForColor.map(c => ({ char: c, hex: solidColor }));
+  } else {
+    for (let i = 0; i < charsForColor.length; i++) {
+      const ratio = charsForColor.length > 1 ? i / (charsForColor.length - 1) : 0;
+      const rgb = getThemeColor(ratio);
+      const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      colorData.push({ char: charsForColor[i], hex });
+    }
+    let lastHex = "";
+    for (let item of colorData) {
+      if (item.char === " " || item.char === "　") resultText += item.char;
+      else if (item.hex !== lastHex) { resultText += item.hex + item.char; lastHex = item.hex; }
+      else resultText += item.char;
+    }
+  }
+  
+  output.textContent = resultText;
+  renderPreview(colorData, preview);
+  charCounter.textContent = `已使用：${Array.from(resultText).length} / ${SAFE_LIMIT}`;
+}
+
+function copyResult() {
+  const out = document.getElementById("output").textContent;
+  if(!out) return;
+  navigator.clipboard.writeText(out).then(() => alert("已成功複製代碼！"));
+}
+
+function clearAll() { document.getElementById("inputText").value = ""; updateAll(); }
+document.getElementById("inputText").addEventListener("input", updateAll);
+document.getElementById("viewerInput").addEventListener("input", updateViewer);
 updateAll();
 </script>
 </body>
